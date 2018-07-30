@@ -1,5 +1,10 @@
+#!/usr/bin/env python3
+
 from datetime import date, datetime
 from typing import List, Dict
+
+import click
+import iso8601
 
 from kiwi import KiwiApi, Journey, Hop
 
@@ -68,6 +73,12 @@ def sort_journeys(journeys: List[Journey]) -> List[Journey]:
     return sorted(journeys, key=journey_score)
 
 
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
 def main():
     api = KiwiApi()
     departureDates = (date(2018, 8, 19), date(2018, 8, 22))
@@ -112,5 +123,24 @@ def main():
     print_journey_summaries([journeys[0] for journeys in all_journeys if journeys])
 
 
+@cli.command()
+@click.argument('fly_from')
+@click.argument('fly_to')
+@click.argument('departure_date')
+@click.argument('return_date')
+def single(fly_from, fly_to, departure_date, return_date):
+    departure_dt = iso8601.parse_date(departure_date)
+    return_dt = iso8601.parse_date(return_date) if return_date else None
+
+    api = KiwiApi()
+    airlines_names = api.airline_names()
+    journeys = api.flights(fly_from, fly_to, (departure_dt, departure_dt), (return_dt, return_dt))
+
+    print(f"Found {len(journeys)} journeys; top 3:")
+    journeys = sort_journeys(journeys)
+    for journey in journeys[:2]:
+        print_journey(journey, airlines_names)
+
+
 if __name__ == '__main__':
-    main()
+    cli()
