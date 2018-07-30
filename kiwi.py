@@ -140,7 +140,11 @@ class KiwiApi:
     def request(self, method: str, url: str, *, params: dict = None, data: object = None) -> dict:
         print(f"Request: {method} {url}...")
         cache_key = json.dumps([method, url, params, data], sort_keys=True)
-        response = self.cache.get(cache_key)
+        try:
+            response = self.cache.get(cache_key)
+        except redis.exceptions.ConnectionError:
+            print("WARNING: Redis unavailable")
+            response = None
         if response is not None:
             print("  ... cache hit!")
             return json.loads(response)
@@ -152,7 +156,10 @@ class KiwiApi:
             r.raise_for_status()
 
         response = r.json()
-        self.cache.set(cache_key, json.dumps(response), 3600)
+        try:
+            self.cache.set(cache_key, json.dumps(response), 3600)
+        except redis.exceptions.ConnectionError:
+            pass
         return response
 
     def convert_single_flight(self, data: dict) -> Journey:
