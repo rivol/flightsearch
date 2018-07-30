@@ -1,0 +1,5 @@
+attrs==18.1.0
+click==6.7
+requests==2.19.1
+iso8601==0.1.12
+redis==2.10.6
