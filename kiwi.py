@@ -92,6 +92,7 @@ class KiwiApi:
                 maxFlyDuration: int = None) \
             -> dict:
         params = {
+            'v': 3,
             'partner': 'picky',
             'flyFrom': flyFrom,
             'to': flyTo,
@@ -117,6 +118,7 @@ class KiwiApi:
         for flight in flight_params:
             flight_dates = flight.pop('dates')
             params = {
+                'v': 3,
                 'flyFrom': flight.pop('from'),
                 'to': flight.pop('to'),
                 'dateFrom': flight_dates[0].strftime(self.DATE_FMT),
